@@ -28,8 +28,19 @@ jobs:
           pip install -r UltronV1/requirements.txt
           pip install pyinstaller
 
+      - name: Self-check (static analysis)
+        run: python UltronV1/scripts/selfcheck.py
+
       - name: Download offline speech model
         run: powershell -NoProfile -ExecutionPolicy Bypass -File UltronV1/scripts/download_models.ps1
+
+      - name: GUI smoke test
+        timeout-minutes: 3
+        run: python UltronV1/scripts/gui_smoke.py
+
+      - name: Functional tests
+        timeout-minutes: 5
+        run: python UltronV1/scripts/test_functional.py
 
       - name: Build Ultron.exe (PyInstaller)
         run: pyinstaller --noconfirm --clean --distpath UltronV1/dist --workpath UltronV1/build UltronV1/scripts/ultron.spec

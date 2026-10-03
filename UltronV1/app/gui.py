@@ -193,9 +193,7 @@ class UltronHUD(tk.Tk):
         self._entry = tk.Entry(input_row, bg=PANEL2, fg=TEXT, insertbackground=ACCENT,
                                relief="flat", font=FONT, justify="left")
         self._entry.pack(side="left", fill="x", expand=True, ipady=7, padx=(0, 8))
-        self._entry.insert(0, "")
         self._entry.bind("<Return>", self._send_text)
-        self._entry.bind("<FocusIn>", lambda e: self._placeholder_clear())
 
         send = self._flat_btn(input_row, "SEND", ACCENT, self._send_text)
         send.pack(side="right", padx=(0, 8))
@@ -232,6 +230,9 @@ class UltronHUD(tk.Tk):
         self.after(60, self._pump)
 
     # ------------------------------------------------------------ events
+    def _on_level(self, level: float) -> None:
+        self._level = float(level)
+
     def _on_state(self, state: str) -> None:
         self._state = state
         style = STATE_STYLE.get(state, STATE_STYLE["standby"])

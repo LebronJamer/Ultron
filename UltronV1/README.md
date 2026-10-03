@@ -44,11 +44,14 @@ Lighter brains if you want more headroom: `gemma2:2b` (~2.6 GB), `qwen2.5:3b` (~
 
 ## Getting the installer (`setup.exe`)
 
-The `.exe` installer is produced automatically by GitHub Actions on every push:
+**Direct download:** grab `UltronSetup-<version>-x64.exe` from the repo's
+[**Releases** page](https://github.com/LebronJamer/Ultron/releases/latest) — every
+`v*` tag automatically builds and publishes a release with the signed-off installer.
+
+Alternatively, the installer is also produced by GitHub Actions on every push:
 
 1. Open the repo's **Actions** tab → **Build Ultron Windows Installer** → pick the latest run.
 2. Download the **`Ultron-Windows-Setup`** artifact → unzip → `UltronSetup-<version>-x64.exe`.
-3. Or push a tag (`v1.0.0`) and the installer is attached to a GitHub **Release** automatically.
 
 ### System requirements
 
@@ -185,7 +188,10 @@ UltronV1/
     ├── ultron.spec           # PyInstaller spec
     ├── version_info.txt      # exe version resource
     ├── download_models.ps1
-    └── build.ps1
+    ├── build.ps1
+    ├── selfcheck.py          # static wiring audit (runs in CI)
+    ├── gui_smoke.py          # instantiates the real GUI in CI before packaging
+    └── test_functional.py    # functional test suite (runs in CI)
 ```
 
 ## Safety & security
