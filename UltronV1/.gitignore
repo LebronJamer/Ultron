@@ -1,0 +1,11 @@
+# build artifacts
+build/
+dist/
+installer/Output/
+.venv/
+__pycache__/
+*.pyc
+*.log
+
+# large model payloads are downloaded by scripts/download_models.ps1 / first run
+app/models/
