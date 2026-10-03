@@ -202,6 +202,8 @@ class UltronHUD(tk.Tk):
         self._mic_btn.pack(side="right", padx=(0, 8))
         self._settings_btn = self._flat_btn(input_row, "SETTINGS", DIM, self.open_settings)
         self._settings_btn.pack(side="right")
+        self._train_btn = self._flat_btn(input_row, "TRAIN", AMBER, self.open_trainer)
+        self._train_btn.pack(side="right", padx=(0, 8))
         self._wizard_btn = self._flat_btn(input_row, "SETUP", DIM, self.open_wizard)
         self._wizard_btn.pack(side="right", padx=(0, 8))
 
@@ -223,6 +225,7 @@ class UltronHUD(tk.Tk):
         self.bus.subscribe("mic_error", self._on_mic_error)
         self.bus.subscribe("muted", self._on_muted)
         self.bus.subscribe("download_progress", self._on_download)
+        self.bus.subscribe("custom_match", self._on_custom_match)
         self.bus.subscribe("level", self._on_level)
 
     def _pump(self) -> None:
@@ -232,6 +235,9 @@ class UltronHUD(tk.Tk):
     # ------------------------------------------------------------ events
     def _on_level(self, level: float) -> None:
         self._level = float(level)
+
+    def _on_custom_match(self, info: dict) -> None:
+        self._log(f"trained command: {info.get('name', '?')} (matched \"{info.get('phrase', '')}\")", "system")
 
     def _on_state(self, state: str) -> None:
         self._state = state
@@ -298,6 +304,11 @@ class UltronHUD(tk.Tk):
         from .wizard import FirstRunWizard
 
         FirstRunWizard(self, self.cfg, self.bus, self.service)
+
+    def open_trainer(self) -> None:
+        from .trainer_ui import TrainingStudio
+
+        TrainingStudio(self, self.cfg, self.bus, self.service)
 
     # ------------------------------------------------------------ animation
     def _animate(self) -> None:

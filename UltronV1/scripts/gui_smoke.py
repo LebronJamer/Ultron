@@ -93,9 +93,42 @@ def main() -> int:
         pump(0.35)  # let the brain-check after() callback fire
     w.destroy()
 
+    # voice training studio: render, switch tabs, simulate a training session
+    from app.trainer_ui import TrainingStudio
+
+    t = TrainingStudio(hud, cfg, bus, svc)
+    for tab in (0, 1, 2):
+        t.notebook.select(tab)
+        pump(0.25)
+
+    # simulate the bus traffic a real training session produces
+    t._new_command()
+    t._last_heard.set("open my workspace")
+    t._add_heard_phrase()
+    t._cc_name.set("smoke-command")
+    t._cc_reply.set("smoke reply")
+    t._save_command()
+    bus.emit("train_partial", "ultr")
+    bus.emit("train_final", "ultron")
+    bus.emit("level", 0.55)
+    bus.emit("download_progress", {"label": "model", "pct": 10})
+    pump(0.4)
+
+    # wake-word save path (writes config + rebuilds engine)
+    t._wake_var.set("ultron")
+    t._variants_txt.delete("1.0", "end")
+    t._variants_txt.insert("1.0", "altron")
+    t._save_wake()
+    pump(0.3)
+
+    # custom command end-to-end through the service (typed input)
+    svc.submit_text("open my workspace")
+    pump(1.0)
+
+    t._close()
     pump(0.2)
     hud.destroy()
-    print("gui smoke OK — HUD, settings and wizard all instantiated and exercised")
+    print("gui smoke OK — HUD, settings, wizard and training studio all exercised")
     return 0
 
 

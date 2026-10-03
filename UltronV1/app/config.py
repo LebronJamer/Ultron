@@ -10,6 +10,12 @@ from .paths import data_dir
 
 DEFAULTS: dict[str, Any] = {
     "wake_word": "ultron",
+    "wake": {
+        # Variants learned in the Voice Training Studio (what the engine
+        # actually hears when this user says the wake word).
+        "variants": [],
+    },
+    "custom_commands": [],
     "hotkey": "ctrl+alt+u",
     "llm": {
         "base_url": "http://127.0.0.1:11434",
@@ -32,8 +38,14 @@ DEFAULTS: dict[str, Any] = {
         "volume": 0.9,
     },
     "stt": {
-        "model_dir": "models/vosk-model-small-en-us-0.15",
+        # Recognition model: "small" (40 MB, fast) or "large" (1.3 GB, best).
+        "model": "small",
         "sample_rate": 16000,
+        # sounddevice input device index; null = system default.
+        "device": None,
+        # Constrain the standby recognizer to the wake-word grammar only
+        # (much more reliable wake detection). Disable if it misbehaves.
+        "wake_grammar": True,
     },
     "behavior": {
         "speak_replies": True,

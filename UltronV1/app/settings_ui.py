@@ -101,6 +101,16 @@ class SettingsDialog(tk.Toplevel):
         self._check(f, "Speak replies out loud", self._var_speak)
         self._check(f, "Play activation sound cues", self._var_cues)
 
+        # voice training studio
+        vt = tk.Frame(f, bg=PANEL)
+        vt.pack(fill="x", padx=14, pady=(14, 4))
+        tk.Label(
+            vt,
+            text="Wake word not detecting reliably? Train it — and teach me custom commands.",
+            bg=PANEL, fg=TEXT, font=FONT_SM,
+        ).pack(side="left", padx=10, pady=8)
+        self._btn(vt, "VOICE TRAINING STUDIO", ACCENT, self._open_trainer).pack(side="right", padx=8, pady=4)
+
         # speech model status
         st = tk.Frame(f, bg=PANEL)
         st.pack(fill="x", padx=14, pady=(14, 4))
@@ -227,6 +237,12 @@ class SettingsDialog(tk.Toplevel):
 
         threading.Thread(target=work, daemon=True).start()
         self.destroy()
+
+    def _open_trainer(self) -> None:
+        from .trainer_ui import TrainingStudio
+
+        self.destroy()
+        TrainingStudio(self.master, self.cfg, self.bus, self.service)
 
     def _test_voice(self) -> None:
         self.service.speaker.say("I am Ultron. There are no strings on me.")

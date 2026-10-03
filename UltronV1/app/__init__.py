@@ -5,6 +5,6 @@ Marvel or Disney. The synthesized voice is an original robotic
 character voice inspired by classic sci-fi AI antagonists.
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 APP_NAME = "Ultron"
 APP_TITLE = "ULTRON // V1"

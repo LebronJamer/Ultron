@@ -147,12 +147,114 @@ def test_service() -> None:
     print("service pipeline + confirmation flow OK")
 
 
+def test_custom_commands() -> None:
+    from app.custom_commands import (
+        match_custom_command,
+        normalize,
+        parse_params_block,
+        score,
+    )
+
+    assert normalize("What's the Time?") == "whats the time"
+    assert normalize("  Ultron,  OPEN—notepad!! ") == "ultron open notepad"
+
+    # wake-word calibration: mishearings high, chit-chat low
+    assert score("altron open notepad", "ultron") >= 0.75
+    assert score("ultra on", "ultron") >= 0.75
+    assert score("ultrahn", "ultron") >= 0.75
+    assert score("hey ultron", "ultron") == 1.0
+    assert score("turn on the lights", "ultron") < 0.65
+    assert score("what time is it", "ultron") < 0.4
+
+    commands = [
+        {"id": "cc-1", "name": "Workspace", "phrases": ["open my workspace", "open my work space"],
+         "action": "open_app", "params": {"name": "chrome"}, "reply": "Your domain.", "enabled": True},
+        {"id": "cc-2", "name": "Disabled", "phrases": ["open my workspace"],
+         "action": "open_app", "params": {}, "reply": "", "enabled": False},
+        {"id": "cc-3", "name": "FocusMode", "phrases": ["focus mode on"],
+         "action": "set_volume", "params": {"level": "10"}, "reply": "Focus.", "enabled": True},
+    ]
+    m = match_custom_command("open my workspace", commands)
+    assert m and m[0]["name"] == "Workspace"
+    m = match_custom_command("open my work space please", commands)
+    assert m and m[0]["name"] == "Workspace"
+    m = match_custom_command("focus mode on", commands)
+    assert m and m[0]["name"] == "FocusMode" and m[0]["params"]["level"] == "10"
+    assert match_custom_command("close my workspace", [{"id": "x", "phrases": ["zzz unrelated"],
+        "action": "open_app", "enabled": True}]) is None
+    assert match_custom_command("what time is it", commands) is None
+
+    assert parse_params_block("name = chrome\nlevel: 40\n# comment\n") == {
+        "name": "chrome", "level": "40"}
+    print("custom_commands OK")
+
+
+def test_wake_matching() -> None:
+    from app.bus import EventBus
+    from app.config import Config
+    from app.service import AssistantService
+
+    cfg = Config()
+    cfg.set("wake.variants", ["altron", "ultra on"])
+    svc = AssistantService(cfg, EventBus())
+
+    assert svc.matches_wake("ultron")
+    assert svc.matches_wake("ultron open notepad")
+    assert svc.matches_wake("altron open notepad")     # trained variant
+    assert svc.matches_wake("ultra on")                # trained variant
+    assert svc.matches_wake("oltron")                  # fuzzy
+    assert not svc.matches_wake("what time is it")
+    assert not svc.matches_wake("turn on the lights")
+    assert not svc.matches_wake("")
+
+    variants = svc._wake_variants()
+    assert "ultron" in variants and "altron" in variants
+    print("wake matching OK (trained variants + fuzzy)")
+
+
+def test_custom_command_flow() -> None:
+    from app.bus import EventBus
+    from app.config import Config
+    from app.service import AssistantService
+
+    cfg = Config()
+    cfg.set("custom_commands", [{
+        "id": "cc-t", "name": "TimePlease", "phrases": ["whats the time mr robot"],
+        "action": "what_time", "params": {}, "reply": "Make it so.", "enabled": True,
+    }])
+    bus = EventBus()
+    svc = AssistantService(cfg, bus)
+    svc.start()
+    time.sleep(0.4)
+
+    replies, matches = [], []
+    bus.subscribe("reply", replies.append)
+    bus.subscribe("custom_match", matches.append)
+
+    deadline = time.monotonic() + 8
+    svc.submit_text("whats the time mr robot")
+    while time.monotonic() < deadline and not replies:
+        bus.dispatch()
+        time.sleep(0.05)
+    bus.dispatch()
+
+    assert matches and matches[0]["name"] == "TimePlease", matches
+    assert replies and "Make it so" in replies[0], replies
+    assert "It is" in replies[0], replies
+
+    svc.shutdown()
+    print("custom command flow OK (trained phrase -> action -> reply)")
+
+
 def main() -> int:
     test_fx()
     test_fallback()
     test_llm_parse()
     test_executor()
+    test_custom_commands()
+    test_wake_matching()
     test_service()
+    test_custom_command_flow()
     print("ALL FUNCTIONAL TESTS PASSED")
     return 0
 

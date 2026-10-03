@@ -10,12 +10,61 @@ from .systemctl import Result
 
 CONFIRM_REQUIRED = {"shutdown", "restart", "sleep"}
 
+# (action, human label, param names) — drives the custom-command editor in
+# the Voice Training Studio.
+ACTION_CATALOG = [
+    ("none", "Just speak a reply (macro)", []),
+    ("open_app", "Open application", ["name"]),
+    ("close_app", "Close application", ["name"]),
+    ("focus_window", "Focus window by title", ["title"]),
+    ("minimize_window", "Minimize active window", []),
+    ("maximize_window", "Maximize active window", []),
+    ("restore_window", "Restore active window", []),
+    ("close_window", "Close active window", []),
+    ("snap_window", "Snap window left / right", ["side"]),
+    ("list_windows", "List open windows", []),
+    ("set_volume", "Set volume (0-100)", ["level"]),
+    ("volume_up", "Volume up", []),
+    ("volume_down", "Volume down", []),
+    ("mute", "Mute", []),
+    ("unmute", "Unmute", []),
+    ("media_playpause", "Play / pause media", []),
+    ("media_next", "Next track", []),
+    ("media_previous", "Previous track", []),
+    ("screenshot", "Take a screenshot", []),
+    ("set_brightness", "Set brightness (0-100)", ["level"]),
+    ("open_url", "Open URL", ["url"]),
+    ("search_web", "Search the web", ["query"]),
+    ("open_file", "Open file or folder", ["path"]),
+    ("find_file", "Find a file", ["name"]),
+    ("clipboard_write", "Write to clipboard", ["text"]),
+    ("clipboard_read", "Read the clipboard aloud", []),
+    ("type_text", "Type text into the focused window", ["text"]),
+    ("press_key", "Press a key", ["key"]),
+    ("system_info", "System report (CPU / RAM / battery)", []),
+    ("set_timer", "Set a timer", ["minutes", "seconds", "label"]),
+    ("set_reminder", "Set a reminder", ["minutes", "text"]),
+    ("what_time", "Say the time", []),
+    ("what_date", "Say the date", []),
+    ("lock", "Lock the PC", []),
+    ("shutdown", "Shut down the PC (asks confirmation)", []),
+    ("restart", "Restart the PC (asks confirmation)", []),
+    ("sleep", "Sleep the PC (asks confirmation)", []),
+    ("help", "List capabilities", []),
+]
+
+
+def action_catalog():
+    """Stable list of trainable actions for the UI."""
+    return list(ACTION_CATALOG)
+
 HELP_TEXT = (
     "I can: open and close apps; minimize, maximize, snap, focus or close windows; "
     "control volume, media and brightness; take screenshots; read and write the clipboard; "
     "type text and press keys; open files, folders and web pages; search the web; "
     "set timers and reminders; report CPU, memory and battery; lock, sleep, restart or "
-    "shut down this machine — with your confirmation, of course. Say 'cancel shutdown' to abort one."
+    "shut down this machine — with your confirmation, of course. Say 'cancel shutdown' to abort one. "
+    "You can also teach me custom commands in the Voice Training Studio — press TRAIN."
 )
 
 

@@ -21,7 +21,8 @@
 
 | Capability | Details |
 |---|---|
-| 🎙️ Wake word | Say **"Ultron"** (or press `Ctrl+Alt+U`) — offline recognition via **Vosk** (~40 MB model, bundled with the installer) |
+| 🎙️ Wake word | Say **"Ultron"** (or press `Ctrl+Alt+U`) — offline recognition via **Vosk** (~40 MB model, bundled), with a **grammar-constrained wake engine** and fuzzy matching against *your* trained variants |
+| 🎓 Voice training | Built-in **Voice Training Studio**: train the wake word on your voice/mic, teach custom commands ("focus mode" → any action), pick the mic, and switch to the Large accuracy model |
 | 🧠 Local AI brain | **Ollama** serving `llama3.2:3b` (~3.7 GB RAM) — free, offline, no API keys. Graceful fallback parser keeps basic commands working without it |
 | 🤖 ULTRON voice | SAPI voice → custom DSP chain: pitch-down, detuned robotic chorus, ring modulation, saturation, dark EQ, convolution reverb |
 | 🪟 System control | Open/close apps, window management (focus/minimize/maximize/snap/close), volume, media keys, brightness, screenshots, clipboard, typed input & key presses, file search/open, web search/URLs, timers & reminders, system reports |
@@ -37,6 +38,10 @@
 | Vosk small speech recognition | ~0.3 GB |
 | TTS + FX + app | ~0.4 GB |
 | **Total** | **~4.4 GB — comfortably inside an 8 GB budget** |
+
+Optional: the **Large recognition model** (`vosk-model-en-us-0.22`, 1.3 GB disk / ~1 GB RAM)
+noticeably improves detection — still ~5.4 GB total with the default brain. Switch in the
+Training Studio's *Microphone & Model* tab.
 
 Lighter brains if you want more headroom: `gemma2:2b` (~2.6 GB), `qwen2.5:3b` (~3.5 GB).
 
@@ -96,6 +101,34 @@ Say `Ultron, <command>` in one breath, or just `Ultron` then wait for the chime.
 
 The console in the HUD shows the full conversation log; the status ring shows
 **STANDBY / LISTENING / PROCESSING / SPEAKING**.
+
+## Voice training (fixes "it doesn't hear me")
+
+Open the **TRAIN** studio from the HUD. Three tabs:
+
+**Wake word** — say the wake word five times; Ultron records exactly what the recognizer
+hears on *your* microphone (variants like *"altron"*, *"ultra on"*), shows ✓/✗ per sample,
+and saves them. Those variants then become:
+
+* a **constrained grammar** for the standby recognizer — it can *only* output the trained
+  phrases, so background speech can't drift into random words and wake-ups get far more
+  reliable, and
+* fuzzy-match targets (similarity ≥ 0.72), so close mishearings still trigger.
+
+**Test detection** gives live ✓/✗ feedback for 20 s after training.
+
+**Custom commands** — teach phrases that map straight to actions:
+
+1. `NEW` → name it (e.g. *Focus mode*), pick an action (38 available: open app, volume,
+   screenshot, timer, …), fill params (`level = 10`), optional custom reply.
+2. `RECORD PHRASE` → say it → `ADD HEARD` (repeat for variants — record what you actually
+   say, including how the engine mishears it).
+3. `SAVE COMMAND` — live immediately. Say **"Ultron, focus mode"** and it runs instantly,
+   no LLM round-trip, fully offline. `TEST MATCH` verifies detection.
+
+**Microphone & Model** — the #1 cause of bad detection is the wrong mic (webcam/monitor
+mics). Pick the right input device, and optionally download the **Large** Vosk model
+(1.3 GB) for a serious accuracy boost.
 
 ### Settings
 
@@ -175,6 +208,8 @@ UltronV1/
 │   ├── modelfetch.py         # first-run speech-model download
 │   ├── setup_ollama.py       # guided Ollama install / model pull
 │   ├── gui.py                # HUD (animated core, console, input)
+│   ├── trainer_ui.py         # Voice Training Studio (wake word / commands / mic)
+│   ├── custom_commands.py    # fuzzy phrase matching for trained commands
 │   ├── settings_ui.py        # settings dialog
 │   ├── wizard.py             # first-run wizard
 │   ├── tray.py               # system tray
@@ -212,6 +247,8 @@ UltronV1/
   (`Settings → Privacy → Microphone` allows desktop apps).
 - **SmartScreen warning** — the installer is unsigned (no code-signing
   certificate). Choose *More info → Run anyway*, or build from source.
+- **Wake word not detected** — open **TRAIN**: record 5 samples so the variants match
+  your voice, check the right microphone is selected, and try the Large model.
 - **Logs** — `%APPDATA%\Ultron\logs\ultron.log`.
 
 ## License

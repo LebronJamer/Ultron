@@ -33,6 +33,13 @@ class EventBus:
         with self._lock:
             self._subs.setdefault(name, []).append(fn)
 
+    def unsubscribe(self, name: str, fn: Callable[[Any], None]) -> None:
+        with self._lock:
+            try:
+                self._subs[name].remove(fn)
+            except (KeyError, ValueError):
+                pass
+
     def dispatch(self) -> None:
         """Deliver all queued events to subscribers (call from the GUI thread)."""
         while True:
